@@ -1,12 +1,19 @@
 import { NextResponse } from 'next/server'
 import { randomBytes } from 'crypto'
 
+function getBaseUrl() {
+  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  return 'http://localhost:3000'
+}
+
 export async function GET() {
   const state = randomBytes(32).toString('hex')
+  const baseUrl = getBaseUrl()
 
   const params = new URLSearchParams({
     client_id: process.env.AUTH_FIGMA_ID!,
-    redirect_uri: `${process.env.NEXTAUTH_URL}/api/figma-oauth/callback`,
+    redirect_uri: `${baseUrl}/api/figma-oauth/callback`,
     scope: 'current_user:read',
     state,
     response_type: 'code',
