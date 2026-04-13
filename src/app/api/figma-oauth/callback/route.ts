@@ -70,18 +70,22 @@ export async function GET(request: NextRequest) {
       exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
     }
 
+    // HTTPS(production)에서는 __Secure- 접두사 사용 (NextAuth v5 규칙)
+    const isSecure = requestUrl.protocol === 'https:'
+    const cookieName = isSecure ? '__Secure-authjs.session-token' : 'authjs.session-token'
+
     const sessionToken = await encode({
       token: jwtPayload,
       secret: process.env.AUTH_SECRET!,
-      salt: 'authjs.session-token',
+      salt: cookieName,
     })
 
     const response = NextResponse.redirect(`${baseUrl}/workspace`)
 
     response.cookies.delete('figma_oauth_state')
-    response.cookies.set('authjs.session-token', sessionToken, {
+    response.cookies.set(cookieName, sessionToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isSecure,
       sameSite: 'lax',
       maxAge: 30 * 24 * 60 * 60,
       path: '/',
