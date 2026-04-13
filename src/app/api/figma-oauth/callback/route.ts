@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { encode } from 'next-auth/jwt'
 
-function getBaseUrl() {
-  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  return 'http://localhost:3000'
-}
-
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
+  const requestUrl = new URL(request.url)
+  const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`
+  const { searchParams } = requestUrl
   const code = searchParams.get('code')
   const state = searchParams.get('state')
   const error = searchParams.get('error')
-  const baseUrl = getBaseUrl()
 
   if (error) {
     return NextResponse.redirect(`${baseUrl}/login?error=figma_denied`)

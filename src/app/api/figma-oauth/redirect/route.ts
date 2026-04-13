@@ -1,15 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { randomBytes } from 'crypto'
 
-function getBaseUrl() {
-  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  return 'http://localhost:3000'
-}
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   const state = randomBytes(32).toString('hex')
-  const baseUrl = getBaseUrl()
+  const { protocol, host } = new URL(request.url)
+  const baseUrl = `${protocol}//${host}`
 
   const params = new URLSearchParams({
     client_id: process.env.AUTH_FIGMA_ID!,
